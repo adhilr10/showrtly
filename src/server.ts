@@ -2,12 +2,15 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
+import cors from 'cors';
 //Custom Modules
 import config from '@/config';
 import router from '@/routes';
+import corsOptions from '@/lib/cors';
 
 const server = express();
 
+server.use(cors(corsOptions));
 // Secure Headers
 server.use(helmet());
 
@@ -41,15 +44,13 @@ server.use(compression());
 const serverTermination = async (signal: NodeJS.Signals): Promise<void> => {
   try {
     // Log a warning indicating the server is shutting down
-    console.log("Server shutdown", signal)
-    process.exit(0)
+    console.log('Server shutdown', signal);
+    process.exit(0);
   } catch (err) {
-    console.error("Error during server shutdown", err)
+    console.error('Error during server shutdown', err);
   }
 };
 
 // listen for Termination signals and trigger grateful shutdown
 process.on('SIGTERM', serverTermination);
 process.on('SIGINT', serverTermination);
-
-

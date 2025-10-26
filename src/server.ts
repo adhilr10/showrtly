@@ -7,6 +7,8 @@ import cors from 'cors';
 import config from '@/config';
 import router from '@/routes';
 import corsOptions from '@/lib/cors';
+import { logger, logtail } from '@/lib/winston';
+import { connectDatabase, disconnectDatabase } from '@/lib/mongoose';
 
 const server = express();
 
@@ -27,13 +29,15 @@ server.use(compression());
 // Immediately Invoked async function to initialize application
 (async function (): Promise<void> {
   try {
-    server.use('', router);
+    // Connect to database
+    await connectDatabase();
+    server.use('/', router);
 
     server.listen(config.PORT, () => {
-      console.log(`Server listening at http://localhost/${config.PORT}`);
+      logger.info(`Server listening at http://localhost/${config.PORT}`);
     });
   } catch (err) {
-    console.error('Failed to start server', err);
+    logger.error('Failed to start server', err);
   }
   if (config.NODE_ENV === 'production') {
     process.exit(1);
@@ -43,11 +47,16 @@ server.use(compression());
 // Handles graceful server shutdown on termination signal
 const serverTermination = async (signal: NodeJS.Signals): Promise<void> => {
   try {
+    // Disconnect from database
+    await disconnectDatabase();
     // Log a warning indicating the server is shutting down
-    console.log('Server shutdown', signal);
+    logger.info('Server shutdown', signal);
+
+    // flush any remaining logs to Logtail before existing
+    logtail.flush();
     process.exit(0);
   } catch (err) {
-    console.error('Error during server shutdown', err);
+    logger.error('Error during server shutdown', err);
   }
 };
 

@@ -17,7 +17,6 @@ const generateAccessToken = (payload: TokenPayload) => {
   return token;
 };
 
-
 const generateRefreshToken = (payload: TokenPayload) => {
   const token = jwt.sign(payload, config.JWT_REFRESH_TOKEN_SECRET, {
     expiresIn: '7d',
@@ -25,5 +24,19 @@ const generateRefreshToken = (payload: TokenPayload) => {
   return token;
 };
 
+//verify access token
+const verifyAccessToken = (accessToken: string): string | JwtPayload => {
+  return jwt.verify(accessToken, config.JWT_ACCESS_TOKEN_SECRET);
+};
 
-export { generateAccessToken, generateRefreshToken };
+//verify refresh token
+const verifyRefreshToken = (refreshToken: string): string | JwtPayload => {
+  return jwt.verify(refreshToken, config.JWT_REFRESH_TOKEN_SECRET);
+};
+
+export {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyAccessToken,
+  verifyRefreshToken,
+};

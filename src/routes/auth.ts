@@ -8,7 +8,8 @@ import validationError from '@/middlewares/validationError';
 import expressRateLimit from '@/lib/expressRateLimit';
 import { User } from '@/models/user';
 import login from '@/controllers/auth/login';
-
+import logout from '@/controllers/auth/logout';
+import authentication from '@/middlewares/authentication';
 const router = Router();
 
 router.post(
@@ -70,9 +71,9 @@ router.post(
         .lean()
         .exec();
       if (!user) return;
-      const passwordIsValid = await bcrypt.compare(password, user.password)
+      const passwordIsValid = await bcrypt.compare(password, user.password);
 
-      if(!passwordIsValid) {
+      if (!passwordIsValid) {
         throw new Error('Incorrect password');
       }
     }),
@@ -80,4 +81,5 @@ router.post(
   login,
 );
 
+router.delete('/logout', expressRateLimit('basic'),authentication, logout);
 export default router;
